@@ -104,6 +104,7 @@
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
+    margin-bottom: 1.5rem;
   }
   
   .refreshButton:hover {
@@ -131,4 +132,29 @@
     border-radius: 0.375rem;
     border: 1px solid #fecaca;
     margin: 1rem 0;
+  }
+  
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  
+  .badgeSuccess {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .badgeWarning {
+    background-color: #fff7ed;
+    color: #9a3412;
+  }
+  
+  .entryId {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #6b7280;
   }

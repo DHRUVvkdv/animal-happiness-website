@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
-// Modular component for the sensor readings table
-const SensorReadingsTable = ({ data, isLoading, error }) => {
-  if (isLoading) return <div className={styles.loadingSpinner}>Loading sensor readings...</div>;
+// Modular component for the animal data table
+const AnimalDataTable = ({ data, isLoading, error }) => {
+  if (isLoading) return <div className={styles.loadingSpinner}>Loading animal data...</div>;
   if (error) return <div className={styles.errorMessage}>Error loading data: {error.message}</div>;
-  if (!data || !data.readings || data.readings.length === 0) return <p>No sensor readings available</p>;
+  if (!data || !data.data || data.data.length === 0) return <p>No animal data available</p>;
 
   // Format timestamp helper function
   const formatTimestamp = (timestamp) => {
@@ -19,29 +19,29 @@ const SensorReadingsTable = ({ data, isLoading, error }) => {
     <div className={styles.tableContainer}>
       <div className={styles.tableHeader}>
         <div className={styles.totalReadings}>
-          Total readings: <span className={styles.count}>{data.count}</span>
+          Total entries: <span className={styles.count}>{data.count}</span>
         </div>
       </div>
       <table className={styles.dataTable}>
         <thead>
           <tr>
-            <th>Parameter</th>
-            <th>Value</th>
-            <th>Unit</th>
-            <th>Location</th>
-            <th>Sensor ID</th>
-            <th>Timestamp</th>
+            <th>Cow ID</th>
+            <th>Response Type</th>
+            <th>Time</th>
+            <th>Entry ID</th>
           </tr>
         </thead>
         <tbody>
-          {data.readings.map((reading, index) => (
+          {data.data.map((entry, index) => (
             <tr key={index}>
-              <td>{reading.parameter_type}</td>
-              <td>{reading.value}</td>
-              <td>{reading.unit}</td>
-              <td>{reading.location}</td>
-              <td>{reading.sensor_id}</td>
-              <td>{formatTimestamp(reading.timestamp)}</td>
+              <td>{entry.cow_id}</td>
+              <td>
+                <span className={`${styles.badge} ${entry.response_type === 'optimistic' ? styles.badgeSuccess : styles.badgeWarning}`}>
+                  {entry.response_type}
+                </span>
+              </td>
+              <td>{formatTimestamp(entry.time)}</td>
+              <td className={styles.entryId}>{entry.entry_id}</td>
             </tr>
           ))}
         </tbody>
@@ -51,9 +51,9 @@ const SensorReadingsTable = ({ data, isLoading, error }) => {
 };
 
 // API service
-const fetchSensorReadings = async () => {
+const fetchAnimalData = async () => {
   try {
-    const apiURL = process.env.NEXT_PUBLIC_API_URL + '/sensors/readings?limit=100';
+    const apiURL = process.env.NEXT_PUBLIC_API_URL + '/animal/data';
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: {
@@ -68,21 +68,21 @@ const fetchSensorReadings = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching sensor readings:', error);
+    console.error('Error fetching animal data:', error);
     throw error;
   }
 };
 
-export default function Home() {
-  const [sensorData, setSensorData] = useState(null);
+export default function AnimalDataPage() {
+  const [animalData, setAnimalData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadSensorData = async () => {
+  const loadAnimalData = async () => {
     try {
       setIsLoading(true);
-      const result = await fetchSensorReadings();
-      setSensorData(result);
+      const result = await fetchAnimalData();
+      setAnimalData(result);
     } catch (err) {
       setError(err);
     } finally {
@@ -91,20 +91,20 @@ export default function Home() {
   };
 
   useEffect(() => {
-    loadSensorData();
+    loadAnimalData();
   }, []);
 
   const handleRefresh = () => {
-    loadSensorData();
+    loadAnimalData();
   };
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.title}>Sensor Readings Dashboard</h1>
+      <h1 className={styles.title}>Animal Happiness Dashboard</h1>
       <button className={styles.refreshButton} onClick={handleRefresh}>
         Refresh Data
       </button>
-      <SensorReadingsTable data={sensorData} isLoading={isLoading} error={error} />
+      <AnimalDataTable data={animalData} isLoading={isLoading} error={error} />
     </main>
   );
 }

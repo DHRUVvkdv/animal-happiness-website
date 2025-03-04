@@ -1,160 +1,170 @@
 .main {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 2rem;
-    min-height: 100vh;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: var(--box-shadow);
-  }
-  
-  .title {
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #111827;
-    text-align: center;
-  }
-  
-  .tableContainer {
-    width: 100%;
-    overflow-x: auto;
-    background-color: white;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-  }
-  
-  .dataTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0;
-    font-size: 0.9rem;
-  }
-  
-  .dataTable th {
-    background-color: var(--table-header-bg);
-    font-weight: 600;
-    text-align: left;
-    padding: 1rem 0.75rem;
-    border-bottom: 2px solid var(--border-color);
-    color: #4b5563;
-    white-space: nowrap;
-  }
-  
-  .dataTable td {
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
-  }
-  
-  .dataTable tr:hover {
-    background-color: var(--table-hover-bg);
-  }
-  
-  .dataTable tr:nth-child(even) {
-    background-color: var(--table-alternate-bg);
-  }
-  
-  .dataTable tr:last-child td {
-    border-bottom: none;
-  }
-  
-  .tableHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 1rem;
-    background-color: white;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .totalReadings {
-    font-weight: 500;
-    color: #4b5563;
-    display: flex;
-    align-items: center;
-  }
-  
-  .count {
-    margin-left: 0.5rem;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-  }
-  
-  .refreshButton {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.375rem;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin-bottom: 1.5rem;
-  }
-  
-  .refreshButton:hover {
-    background-color: #2563eb;
-  }
-  
-  .refreshButton:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-  }
-  
-  .loadingSpinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    padding: 3rem 0;
-  }
-  
-  .errorMessage {
-    text-align: center;
-    color: #ef4444;
-    padding: 2rem;
-    background-color: #fee2e2;
-    border-radius: 0.375rem;
-    border: 1px solid #fecaca;
-    margin: 1rem 0;
-  }
-  
-  .badge {
-    display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: capitalize;
-  }
-  
-  .badgeSuccess {
-    background-color: #d1fae5;
-    color: #065f46;
-  }
-  
-  .badgeWarning {
-    background-color: #fff7ed;
-    color: #9a3412;
-  }
-  
-  .entryId {
-    font-family: monospace;
-    font-size: 0.8rem;
-    color: #6b7280;
-  }
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+}
+
+.title {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.dataTable th {
+  background-color: var(--table-header-bg);
+  font-weight: 600;
+  text-align: left;
+  padding: 1rem 0.75rem;
+  border-bottom: 2px solid var(--border-color);
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.sortableHeader {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.sortableHeader:hover {
+  background-color: #e5e7eb;
+}
+
+.dataTable td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.dataTable tr:hover {
+  background-color: var(--table-hover-bg);
+}
+
+.dataTable tr:nth-child(even) {
+  background-color: var(--table-alternate-bg);
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem;
+  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.totalReadings {
+  font-weight: 500;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+}
+
+.count {
+  margin-left: 0.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.refreshButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 1.5rem;
+}
+
+.refreshButton:hover {
+  background-color: #2563eb;
+}
+
+.refreshButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+}
+
+.loadingSpinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 3rem 0;
+}
+
+.errorMessage {
+  text-align: center;
+  color: #ef4444;
+  padding: 2rem;
+  background-color: #fee2e2;
+  border-radius: 0.375rem;
+  border: 1px solid #fecaca;
+  margin: 1rem 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.badgeSuccess {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badgeWarning {
+  background-color: #fff7ed;
+  color: #9a3412;
+}
+
+.entryId {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #6b7280;
+}

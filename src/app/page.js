@@ -1,10 +1,19 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
 // Modular component for the animal data table
 const AnimalDataTable = ({ data, isLoading, error }) => {
+  const [sortedData, setSortedData] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'time', direction: 'desc' });
+
+  useEffect(() => {
+    if (data && data.data && data.data.length > 0) {
+      const dataToSort = [...data.data];
+      sortData(dataToSort, sortConfig.key, sortConfig.direction);
+    }
+  }, [data, sortConfig.key, sortConfig.direction]);
+
   if (isLoading) return <div className={styles.loadingSpinner}>Loading animal data...</div>;
   if (error) return <div className={styles.errorMessage}>Error loading data: {error.message}</div>;
   if (!data || !data.data || data.data.length === 0) return <p>No animal data available</p>;
@@ -13,6 +22,40 @@ const AnimalDataTable = ({ data, isLoading, error }) => {
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleString();
+  };
+
+  // Sort data helper function
+  const sortData = (dataArray, key, direction) => {
+    const sortedArray = dataArray.sort((a, b) => {
+      if (key === 'time') {
+        // For time field, compare as dates
+        const dateA = new Date(a[key]).getTime();
+        const dateB = new Date(b[key]).getTime();
+        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+      } else {
+        // For other fields, compare as strings
+        if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+        if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+        return 0;
+      }
+    });
+    setSortedData(sortedArray);
+  };
+
+  // Handle sort request
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+    sortData([...data.data], key, direction);
+  };
+
+  // Get sort direction icon
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) return '↕️';
+    return sortConfig.direction === 'asc' ? '↑' : '↓';
   };
 
   return (
@@ -25,14 +68,22 @@ const AnimalDataTable = ({ data, isLoading, error }) => {
       <table className={styles.dataTable}>
         <thead>
           <tr>
-            <th>Cow ID</th>
-            <th>Response Type</th>
-            <th>Time</th>
-            <th>Entry ID</th>
+            <th onClick={() => handleSort('cow_id')} className={styles.sortableHeader}>
+              Cow ID {getSortIcon('cow_id')}
+            </th>
+            <th onClick={() => handleSort('response_type')} className={styles.sortableHeader}>
+              Response Type {getSortIcon('response_type')}
+            </th>
+            <th onClick={() => handleSort('time')} className={styles.sortableHeader}>
+              Time {getSortIcon('time')}
+            </th>
+            <th onClick={() => handleSort('entry_id')} className={styles.sortableHeader}>
+              Entry ID {getSortIcon('entry_id')}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {data.data.map((entry, index) => (
+          {sortedData.map((entry, index) => (
             <tr key={index}>
               <td>{entry.cow_id}</td>
               <td>
@@ -61,11 +112,9 @@ const fetchAnimalData = async () => {
         'X-API-Key': process.env.NEXT_PUBLIC_API_KEY
       }
     });
-
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
-
     return await response.json();
   } catch (error) {
     console.error('Error fetching animal data:', error);

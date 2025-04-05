@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
 // Modular component for the animal data table
-const AnimalDataTable = ({ data, isLoading, error }) => {
+const AnimalDataTable = ({ data, isLoading, error, onLoadMore, hasMore, totalItems }) => {
   const [sortedData, setSortedData] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'time', direction: 'desc' });
 
@@ -14,7 +14,7 @@ const AnimalDataTable = ({ data, isLoading, error }) => {
     }
   }, [data, sortConfig.key, sortConfig.direction]);
 
-  if (isLoading) return <div className={styles.loadingSpinner}>Loading animal data...</div>;
+  if (isLoading && !sortedData.length) return <div className={styles.loadingSpinner}>Loading animal data...</div>;
   if (error) return <div className={styles.errorMessage}>Error loading data: {error.message}</div>;
   if (!data || !data.data || data.data.length === 0) return <p>No animal data available</p>;
 
@@ -62,7 +62,9 @@ const AnimalDataTable = ({ data, isLoading, error }) => {
     <div className={styles.tableContainer}>
       <div className={styles.tableHeader}>
         <div className={styles.totalReadings}>
-          Total entries: <span className={styles.count}>{data.count}</span>
+          {data.data && data.data.length > 0 ?
+            `Showing ${data.data.length} of ${data.total_count || '?'} entries` :
+            'No entries found'}
         </div>
       </div>
       <table className={styles.dataTable}>
@@ -84,7 +86,7 @@ const AnimalDataTable = ({ data, isLoading, error }) => {
         </thead>
         <tbody>
           {sortedData.map((entry, index) => (
-            <tr key={index}>
+            <tr key={entry.entry_id || index}>
               <td>{entry.cow_id}</td>
               <td>
                 <span className={`${styles.badge} ${entry.response_type === 'optimistic' ? styles.badgeSuccess : styles.badgeWarning}`}>
@@ -97,14 +99,32 @@ const AnimalDataTable = ({ data, isLoading, error }) => {
           ))}
         </tbody>
       </table>
+
+      {hasMore && (
+        <div className={styles.loadMoreContainer}>
+          <button
+            className={styles.loadMoreButton}
+            onClick={onLoadMore}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Loading more entries...' : 'Load More'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
 // API service
-const fetchAnimalData = async () => {
+const fetchAnimalData = async (nextToken = null) => {
   try {
-    const apiURL = process.env.NEXT_PUBLIC_API_URL + '/animal/data';
+    let apiURL = process.env.NEXT_PUBLIC_API_URL + '/animal/data';
+
+    // Add next_token as a query parameter if available
+    if (nextToken) {
+      apiURL += `?next_token=${encodeURIComponent(nextToken)}`;
+    }
+
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: {
@@ -112,9 +132,11 @@ const fetchAnimalData = async () => {
         'X-API-Key': process.env.NEXT_PUBLIC_API_KEY
       }
     });
+
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`);
     }
+
     return await response.json();
   } catch (error) {
     console.error('Error fetching animal data:', error);
@@ -124,14 +146,40 @@ const fetchAnimalData = async () => {
 
 export default function AnimalDataPage() {
   const [animalData, setAnimalData] = useState(null);
+  const [nextToken, setNextToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
 
-  const loadAnimalData = async () => {
+  const loadAnimalData = async (token = null, reset = false) => {
     try {
       setIsLoading(true);
-      const result = await fetchAnimalData();
-      setAnimalData(result);
+      const result = await fetchAnimalData(token);
+
+      console.log("API Response:", result); // Add this to debug
+
+      if (reset) {
+        setAnimalData(result);
+        // Use total_count if available, otherwise just use count
+        setTotalItems(result.total_count !== undefined ? result.total_count : result.count);
+      } else {
+        // Append to existing data
+        setAnimalData(prev => {
+          if (prev && prev.data) {
+            return {
+              ...result,
+              data: [...prev.data, ...result.data],
+              count: prev.data.length + result.data.length,
+              // Keep the total_count consistent
+              total_count: result.total_count !== undefined ? result.total_count : prev.total_count
+            };
+          }
+          return result;
+        });
+      }
+
+      setNextToken(result.next_token);
+
     } catch (err) {
       setError(err);
     } finally {
@@ -140,11 +188,26 @@ export default function AnimalDataPage() {
   };
 
   useEffect(() => {
-    loadAnimalData();
+    // Initial data load
+    loadAnimalData(null, true);
+
+    // Set up auto-refresh every 30 seconds
+    const refreshInterval = setInterval(() => {
+      loadAnimalData(null, true);
+    }, 30000);
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const handleRefresh = () => {
-    loadAnimalData();
+    // Reset and reload
+    loadAnimalData(null, true);
+  };
+
+  const handleLoadMore = () => {
+    if (nextToken) {
+      loadAnimalData(nextToken, false);
+    }
   };
 
   return (
@@ -153,7 +216,14 @@ export default function AnimalDataPage() {
       <button className={styles.refreshButton} onClick={handleRefresh}>
         Refresh Data
       </button>
-      <AnimalDataTable data={animalData} isLoading={isLoading} error={error} />
+      <AnimalDataTable
+        data={animalData}
+        isLoading={isLoading}
+        error={error}
+        onLoadMore={handleLoadMore}
+        hasMore={!!nextToken}
+        totalItems={totalItems}
+      />
     </main>
   );
 }
